@@ -1,65 +1,100 @@
-import Image from "next/image";
+"use client";
+import { useState } from "react";
+import { Sidebar } from "@/components/layout/Sidebar";
+import { ModelToggleBar } from "@/components/layout/ModelToggleBar";
+import { ProviderGrid } from "@/components/arena/ProviderGrid";
+import { PromptComposer } from "@/components/arena/PromptComposer";
+import { JudgeButton } from "@/components/arena/JudgeButton";
+import { FinalAnswerCard } from "@/components/arena/FinalAnswerCard";
+import { AuthModal } from "@/components/modals/AuthModal";
+import { getDeviceToken } from "@/lib/getDeviceToken";
 
 export default function Home() {
+  const [enabled, setEnabled] = useState(["gemini", "groq", "openai", "deepseek"]);
+  const [responses, setResponses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [messageId, setMessageId] = useState<string | null>(null);
+  const [judgeResult, setJudgeResult] = useState<any>(null);
+  const [judging, setJudging] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authReason, setAuthReason] = useState<"settings" | "limit">("settings");
+
+  function toggleModel(id: string) {
+    setEnabled((prev) => (prev.includes(id) ? prev.filter((m) => m !== id) : [...prev, id]));
+  }
+
+  async function handleSubmit(prompt: string) {
+    setLoading(true);
+    setJudgeResult(null);
+    setResponses([]);
+
+    const deviceToken = getDeviceToken();
+    const res = await fetch("/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt, deviceToken }),
+    });
+    const data = await res.json();
+
+    if (res.status === 429) {
+      setAuthReason("limit");
+      setAuthOpen(true);
+      setLoading(false);
+      return;
+    }
+
+    setResponses(data.responses);
+    setMessageId(data.messageId);
+    setLoading(false);
+  }
+
+  async function handleJudge() {
+    if (!messageId) return;
+    setJudging(true);
+    const res = await fetch("/api/judge", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messageId }),
+    });
+    const data = await res.json();
+    setJudgeResult(data);
+    setJudging(false);
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+    <div className="flex">
+      <Sidebar onSettingsClick={() => { setAuthReason("settings"); setAuthOpen(true); }} />
+
+      <main className="flex-1 px-6 py-6 max-w-5xl mx-auto">
+        <ModelToggleBar enabled={enabled} onToggle={toggleModel} />
+
+        {(responses.length > 0 || loading) && (
+          <ProviderGrid
+            responses={responses.filter((r) => enabled.includes(r.provider))}
+            loading={loading}
+          />
+        )}
+
+        {responses.length > 0 && !loading && !judgeResult && (
+          <JudgeButton onClick={handleJudge} loading={judging} />
+        )}
+
+        {judgeResult && (
+          <FinalAnswerCard
+            winnerProvider={judgeResult.winnerProvider}
+            finalAnswer={judgeResult.finalAnswer}
+            reasoning={judgeResult.verdict.reasoning}
+          />
+        )}
+
+        <div className="fixed bottom-0 left-64 right-0 p-4 bg-[#0B0D12] border-t border-white/10">
+          <div className="max-w-5xl mx-auto">
+            <PromptComposer onSubmit={handleSubmit} disabled={loading} />
+          </div>
         </div>
       </main>
+
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} reason={authReason} />
     </div>
   );
 }
