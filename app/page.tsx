@@ -47,6 +47,31 @@ export default function Home() {
     setResponses([]);
     setCurrentPrompt(prompt);
 
+    async function handleSelectConversation(conversationId: string) {
+      const res = await fetch(`/api/history/${conversationId}`);
+      const data = await res.json();
+
+      if (res.ok) {
+        setCurrentPrompt(data.prompt);
+        setMessageId(data.messageId);
+        setResponses(data.responses);
+        setJudgeResult(
+          data.verdict
+            ? {
+                winnerProvider: data.verdict.winnerResponseId
+                  ? data.responses.find(
+                      (r: any) => r.id === data.verdict.winnerResponseId,
+                    )?.provider
+                  : null,
+                finalAnswer: data.verdict.reasoning,
+                verdict: { reasoning: data.verdict.reasoning },
+              }
+            : null,
+        );
+        setLoading(false);
+      }
+    }
+
     const deviceToken = getDeviceToken();
     const res = await fetch("/api/generate", {
       method: "POST",
@@ -94,10 +119,12 @@ export default function Home() {
             onSettingsClick={() => {
               setAuthReason("settings");
               setAuthOpen(true);
-            } }
-            onNewChat={handleNewChat} isOpen={false} onToggle={function (): void {
-              throw new Error("Function not implemented.");
-            } }          />
+            }}
+            onNewChat={handleNewChat}
+            isOpen={sidebarOpen}
+            onToggle={() => setSidebarOpen(!sidebarOpen)}
+            onSelectConversation={handleSelectConversation}
+          />
         )}
       </AnimatePresence>
 

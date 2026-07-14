@@ -18,7 +18,8 @@ export function Sidebar({
   onToggle,
   onNewChat,
   onSettingsClick,
-}: SidebarProps) {
+  onSelectConversation,
+}: SidebarProps & { onSelectConversation: (id: string) => void }) {
   const { isSignedIn } = useUser();
   const [history, setHistory] = useState<Conversation[]>([]);
 
@@ -72,6 +73,7 @@ export function Sidebar({
                 {history.map((c) => (
                   <div
                     key={c.id}
+                    onClick={() => onSelectConversation(c.id)} // ye line add karo
                     className="font-sans text-[13px] font-medium tracking-[0.01em] text-text-primary hover:bg-surface-hover rounded-input px-(--space-3) py-(--space-2) transition-colors cursor-pointer select-none truncate"
                   >
                     {c.title ?? "Untitled"}
