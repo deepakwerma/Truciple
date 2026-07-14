@@ -22,7 +22,7 @@ export default function Home() {
   const [authReason, setAuthReason] = useState<"settings" | "limit">(
     "settings",
   );
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentPrompt, setCurrentPrompt] = useState<string | null>(null);
 
   function toggleModel(id: string) {
@@ -126,7 +126,7 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      <main className="flex-1 h-full flex flex-col overflow-hidden">
+      <main className="flex-1 h-full flex flex-col overflow-hidden relative">
         <ModelToggleBar
           enabled={enabled}
           onToggle={toggleModel}
@@ -134,13 +134,16 @@ export default function Home() {
           onSidebarToggle={() => setSidebarOpen(!sidebarOpen)}
         />
 
-        <div className="flex-1 overflow-y-auto">
+        {/* Fixed full-screen empty state — sits behind the top bar and composer, never scrolls */}
+        {!currentPrompt && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
+            <EmptyState />
+          </div>
+        )}
+
+        <div className="flex-1 overflow-y-auto relative z-10">
           <div className="max-w-7xl mx-auto px-(--space-6) py-(--space-6) space-y-(--space-6) w-full">
-            {!currentPrompt && (
-              <div className="min-h-[calc(100vh-160px)] flex items-center justify-center">
-                <EmptyState />
-              </div>
-            )}
+            {/* EmptyState is now rendered as a fixed overlay above, not here */}
 
             {currentPrompt && (
               <div className="w-full flex justify-end select-none">
@@ -180,7 +183,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="h-20 shrink-0 bg-bg/75 backdrop-blur-md border-t border-border px-(--space-5) flex items-center">
+        <div className="shrink-0 bg-bg/75 backdrop-blur-md border-t border-border px-(--space-5) py-(--space-3) flex items-center min-h-[64px]">
           <div className="max-w-7xl mx-auto w-full">
             <PromptComposer onSubmit={handleSubmit} disabled={loading} />
           </div>

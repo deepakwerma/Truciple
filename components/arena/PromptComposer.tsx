@@ -30,7 +30,7 @@ export function PromptComposer({
         }}
         placeholder="Ask anything…"
         rows={1}
-        className="flex-1 bg-transparent text-[14px] leading-[1.6] text-text-primary placeholder:text-text-muted resize-none py-[var(--space-2)] focus:outline-none max-h-32"
+        className="flex-1 bg-transparent text-[14px] leading-[1.6] text-text-primary placeholder:text-text-muted resize-none py-[var(--space-2)] focus:outline-none max-h-32 min-h-[40px] overflow-auto"
       />
       <button
         onClick={handleSubmit}
