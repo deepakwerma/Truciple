@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db/client";
-import { conversations, messages, llmResponses } from "@/lib/db/schema";
+import { conversations, messages, llmResponses, users } from "@/lib/db/schema";
 import { generateAll } from "@/lib/llm/generateAll";
 import { checkDeviceLimit, recordDeviceUsage } from "@/lib/db/queries/limits";
 
@@ -19,11 +19,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Prompt too long" }, { status: 400 });
   }
   if (!deviceToken || typeof deviceToken !== "string") {
-    return NextResponse.json({ error: "deviceToken is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "deviceToken is required" },
+      { status: 400 },
+    );
   }
 
   const { userId } = await auth();
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  if (userId) {
+    await db
+      .insert(users)
+      .values({ id: userId, email: null })
+      .onConflictDoNothing();
+  }
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
 
   const limitCheck = await checkDeviceLimit(deviceToken, ip, userId);
   if (!limitCheck.allowed) {
@@ -32,9 +42,10 @@ export async function POST(req: NextRequest) {
 
   let convoId = conversationId;
   if (!convoId) {
+    const autoTitle = prompt.length > 50 ? prompt.slice(0, 50) + "..." : prompt;
     const [newConvo] = await db
       .insert(conversations)
-      .values({ deviceToken, userId: userId ?? null })
+      .values({ deviceToken, userId: userId ?? null, title: autoTitle })
       .returning({ id: conversations.id });
     convoId = newConvo.id;
   }
@@ -44,7 +55,7 @@ export async function POST(req: NextRequest) {
     .values({ conversationId: convoId, prompt })
     .returning({ id: messages.id });
 
-  const results = await generateAll(prompt, providers); // sirf ek baar, providers ke saath, validation ke BAAD
+  const results = await generateAll(prompt, providers);
 
   const savedResponses = await Promise.all(
     results.map((r) =>
@@ -58,8 +69,8 @@ export async function POST(req: NextRequest) {
           status: r.status,
           latencyMs: r.latencyMs,
         })
-        .returning()
-    )
+        .returning(),
+    ),
   );
 
   await recordDeviceUsage(deviceToken, ip, userId);
