@@ -47,31 +47,6 @@ export default function Home() {
     setResponses([]);
     setCurrentPrompt(prompt);
 
-    async function handleSelectConversation(conversationId: string) {
-      const res = await fetch(`/api/history/${conversationId}`);
-      const data = await res.json();
-
-      if (res.ok) {
-        setCurrentPrompt(data.prompt);
-        setMessageId(data.messageId);
-        setResponses(data.responses);
-        setJudgeResult(
-          data.verdict
-            ? {
-                winnerProvider: data.verdict.winnerResponseId
-                  ? data.responses.find(
-                      (r: any) => r.id === data.verdict.winnerResponseId,
-                    )?.provider
-                  : null,
-                finalAnswer: data.verdict.reasoning,
-                verdict: { reasoning: data.verdict.reasoning },
-              }
-            : null,
-        );
-        setLoading(false);
-      }
-    }
-
     const deviceToken = getDeviceToken();
     const res = await fetch("/api/generate", {
       method: "POST",
@@ -103,6 +78,31 @@ export default function Home() {
     const data = await res.json();
     setJudgeResult(data);
     setJudging(false);
+  }
+
+  async function handleSelectConversation(conversationId: string) {
+    const res = await fetch(`/api/history/${conversationId}`);
+    const data = await res.json();
+
+    if (res.ok) {
+      setCurrentPrompt(data.prompt);
+      setMessageId(data.messageId);
+      setResponses(data.responses);
+      setJudgeResult(
+        data.verdict
+          ? {
+              winnerProvider: data.verdict.winnerResponseId
+                ? data.responses.find(
+                    (r: any) => r.id === data.verdict.winnerResponseId,
+                  )?.provider
+                : null,
+              finalAnswer: data.verdict.reasoning,
+              verdict: { reasoning: data.verdict.reasoning },
+            }
+          : null,
+      );
+      setLoading(false);
+    }
   }
 
   // Only allow evaluation if at least 2 enabled generator models succeed
