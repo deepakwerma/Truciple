@@ -3,9 +3,24 @@ import { PanelLeft } from "lucide-react";
 import { SignInButton, UserButton, Show } from "@clerk/nextjs";
 
 const MODELS = [
-  { id: "gemini", label: "Gemini", colorVar: "var(--gemini)", bgVar: "rgba(107, 140, 174, 0.12)" },
-  { id: "groq", label: "Llama", colorVar: "var(--llama)", bgVar: "rgba(184, 135, 90, 0.12)" },
-  { id: "deepseek", label: "DeepSeek", colorVar: "var(--deepseek)", bgVar: "rgba(169, 120, 138, 0.12)" },
+  {
+    id: "gemini",
+    label: "Gemini",
+    colorVar: "var(--gemini)",
+    bgVar: "rgba(107, 140, 174, 0.12)",
+  },
+  {
+    id: "groq",
+    label: "Llama",
+    colorVar: "var(--llama)",
+    bgVar: "rgba(184, 135, 90, 0.12)",
+  },
+  {
+    id: "deepseek",
+    label: "DeepSeek",
+    colorVar: "var(--deepseek)",
+    bgVar: "rgba(169, 120, 138, 0.12)",
+  },
 ];
 
 interface ModelToggleBarProps {
@@ -23,7 +38,6 @@ export function ModelToggleBar({
 }: ModelToggleBarProps) {
   return (
     <div className="h-14 shrink-0 flex items-center justify-between bg-surface border-b border-border px-[var(--space-5)] select-none">
-      {/* Left side: Sidebar Toggle & Model Chips */}
       <div className="flex items-center gap-[var(--space-4)] overflow-x-auto scrollbar-none py-1">
         {!sidebarOpen && (
           <button
@@ -45,7 +59,9 @@ export function ModelToggleBar({
                 style={{
                   color: isActive ? m.colorVar : "var(--text-muted)",
                   backgroundColor: isActive ? m.bgVar : "transparent",
-                  border: isActive ? `1px solid ${m.colorVar}33` : "1px solid var(--border)",
+                  border: isActive
+                    ? `1px solid ${m.colorVar}33`
+                    : "1px solid var(--border)",
                 }}
                 className="h-[34px] px-[var(--space-3)] rounded-full font-mono text-[12px] font-medium tracking-[0.02em] uppercase transition-colors hover:border-border-hover cursor-pointer focus-ring"
               >
@@ -56,7 +72,6 @@ export function ModelToggleBar({
         </div>
       </div>
 
-      {/* Right side: Auth controls */}
       <div className="flex items-center gap-[var(--space-3)] shrink-0">
         <Show when="signed-out">
           <SignInButton mode="modal">

@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
   const { userId } = await auth();
 
   if (!userId) {
-    return NextResponse.json({ conversations: [] }); // guest ke liye khaali, history sirf login ke baad
+    return NextResponse.json({ conversations: [] });
   }
 
   const convos = await db

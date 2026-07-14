@@ -12,7 +12,6 @@ import { getDeviceToken } from "@/lib/getDeviceToken";
 import { EmptyState } from "@/components/arena/EmptyState";
 
 export default function Home() {
-  // Compare exactly three models initially (excluding openai which is reserved for the judge)
   const [enabled, setEnabled] = useState(["gemini", "groq", "deepseek"]);
   const [responses, setResponses] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -105,7 +104,6 @@ export default function Home() {
     }
   }
 
-  // Only allow evaluation if at least 2 enabled generator models succeed
   const canEvaluate =
     responses.filter(
       (r) => enabled.includes(r.provider) && r.status === "success",
@@ -136,17 +134,14 @@ export default function Home() {
           onSidebarToggle={() => setSidebarOpen(!sidebarOpen)}
         />
 
-        {/* Content area that scrolls independently */}
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-7xl mx-auto px-(--space-6) py-(--space-6) space-y-(--space-6) w-full">
-            {/* Empty state — no conversation started yet */}
             {!currentPrompt && (
               <div className="min-h-[calc(100vh-160px)] flex items-center justify-center">
                 <EmptyState />
               </div>
             )}
 
-            {/* User Prompt Display (aligned right, max 75% width, desaturated green) */}
             {currentPrompt && (
               <div className="w-full flex justify-end select-none">
                 <div className="max-w-[75%] bg-[rgba(74,155,127,0.06)] border border-[rgba(74,155,127,0.12)] rounded-card py-(--space-4) px-(--space-5) flex flex-col">
@@ -185,7 +180,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Pinned Bottom Composer (glassmorphic transparent bar, exactly 80px height to align with sidebar footer border) */}
         <div className="h-20 shrink-0 bg-bg/75 backdrop-blur-md border-t border-border px-(--space-5) flex items-center">
           <div className="max-w-7xl mx-auto w-full">
             <PromptComposer onSubmit={handleSubmit} disabled={loading} />

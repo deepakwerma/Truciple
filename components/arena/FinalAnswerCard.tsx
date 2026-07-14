@@ -28,7 +28,6 @@ export function FinalAnswerCard({
       }}
       className="flex flex-col rounded-[var(--radius-card)] border border-border p-[var(--space-5)] select-none mt-[var(--space-4)] min-h-[200px]"
     >
-      {/* Header Row (no divider line) */}
       <div className="flex items-center justify-between mb-[var(--space-4)]">
         <span className="font-mono text-[12px] font-medium tracking-[0.02em] uppercase text-accent-judge">
           GPT-OSS Evaluation
@@ -38,12 +37,10 @@ export function FinalAnswerCard({
         </span>
       </div>
 
-      {/* Main Answer */}
       <div className="flex-1 mb-[var(--space-4)] font-sans text-[14px] leading-[1.6] text-text-primary">
         <MarkdownRenderer content={finalAnswer} />
       </div>
 
-      {/* Reasoning Section (no divider line, just spacing) */}
       <div className="mt-[var(--space-2)]">
         <p className="font-sans text-[12px] font-normal leading-[1.4] text-text-muted">
           {reasoning}

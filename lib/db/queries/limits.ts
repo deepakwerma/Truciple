@@ -12,7 +12,6 @@ function withinWindow(lastUsedAt: Date | string | null): boolean {
   return daysSince <= WINDOW_DAYS;
 }
 
-// ===== GATE 2: per-person weekly limit, checked by BOTH token and IP =====
 export async function checkDeviceLimit(
   deviceToken: string,
   ip: string,
@@ -34,7 +33,6 @@ export async function checkDeviceLimit(
   const ipCount =
     ipRow && withinWindow(ipRow.lastUsedAt) ? ipRow.messageCount : 0;
 
-  // block if EITHER identifier has hit the limit — IP is the real backstop
   if (tokenCount >= limit || ipCount >= limit) {
     return {
       allowed: false,
@@ -50,28 +48,24 @@ export async function checkDeviceLimit(
   };
 }
 
-// call this AFTER a successful generation, updates both tables
 export async function recordDeviceUsage(
   deviceToken: string,
   ip: string,
   userId: string | null,
 ) {
-  // --- device_usage upsert ---
   const [tokenRow] = await db
     .select()
     .from(deviceUsage)
     .where(eq(deviceUsage.deviceToken, deviceToken));
 
   if (!tokenRow) {
-    await db
-      .insert(deviceUsage)
-      .values({
-        deviceToken,
-        ipAddress: ip,
-        userId,
-        messageCount: 1,
-        lastUsedAt: new Date(),
-      });
+    await db.insert(deviceUsage).values({
+      deviceToken,
+      ipAddress: ip,
+      userId,
+      messageCount: 1,
+      lastUsedAt: new Date(),
+    });
   } else if (!withinWindow(tokenRow.lastUsedAt)) {
     await db
       .update(deviceUsage)
@@ -88,7 +82,6 @@ export async function recordDeviceUsage(
       .where(eq(deviceUsage.deviceToken, deviceToken));
   }
 
-  // --- ip_usage upsert ---
   const [ipRow] = await db
     .select()
     .from(ipUsage)
@@ -114,7 +107,6 @@ export async function recordDeviceUsage(
   }
 }
 
-// ===== GATE 1: global daily cap per provider =====
 const DAILY_CAPS: Record<string, number> = {
   gemini: 1000,
   groq: 1000,

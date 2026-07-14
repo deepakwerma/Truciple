@@ -2,7 +2,13 @@
 import { useState } from "react";
 import { ArrowUp } from "lucide-react";
 
-export function PromptComposer({ onSubmit, disabled }: { onSubmit: (prompt: string) => void; disabled: boolean }) {
+export function PromptComposer({
+  onSubmit,
+  disabled,
+}: {
+  onSubmit: (prompt: string) => void;
+  disabled: boolean;
+}) {
   const [value, setValue] = useState("");
 
   function handleSubmit() {
