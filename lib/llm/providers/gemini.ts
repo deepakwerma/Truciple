@@ -10,6 +10,9 @@ export async function callGemini(prompt: string): Promise<string> {
     config: {
       systemInstruction: systemPrompt,
       maxOutputTokens: 1000,
+      thinkingConfig: {
+        thinkingBudget: 0,
+      },
     },
   });
 

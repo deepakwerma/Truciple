@@ -9,6 +9,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const prompt = body?.prompt;
   const deviceToken = body?.deviceToken;
+  const providers = body?.providers as string[] | undefined;
   const conversationId = body?.conversationId as string | undefined;
 
   if (!prompt || typeof prompt !== "string" || prompt.trim().length === 0) {
@@ -43,7 +44,7 @@ export async function POST(req: NextRequest) {
     .values({ conversationId: convoId, prompt })
     .returning({ id: messages.id });
 
-  const results = await generateAll(prompt);
+  const results = await generateAll(prompt, providers); // sirf ek baar, providers ke saath, validation ke BAAD
 
   const savedResponses = await Promise.all(
     results.map((r) =>

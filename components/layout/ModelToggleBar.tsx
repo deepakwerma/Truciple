@@ -1,38 +1,81 @@
 "use client";
+import { PanelLeft } from "lucide-react";
+import { SignInButton, UserButton, Show } from "@clerk/nextjs";
 
 const MODELS = [
-  { id: "gemini", label: "Gemini" },
-  { id: "groq", label: "Llama" },
-  { id: "openai", label: "GPT-OSS" },
-  { id: "deepseek", label: "DeepSeek" },
+  { id: "gemini", label: "Gemini", colorVar: "var(--gemini)", bgVar: "rgba(107, 140, 174, 0.12)" },
+  { id: "groq", label: "Llama", colorVar: "var(--llama)", bgVar: "rgba(184, 135, 90, 0.12)" },
+  { id: "deepseek", label: "DeepSeek", colorVar: "var(--deepseek)", bgVar: "rgba(169, 120, 138, 0.12)" },
 ];
+
+interface ModelToggleBarProps {
+  enabled: string[];
+  onToggle: (id: string) => void;
+  sidebarOpen: boolean;
+  onSidebarToggle: () => void;
+}
 
 export function ModelToggleBar({
   enabled,
   onToggle,
-}: {
-  enabled: string[];
-  onToggle: (id: string) => void;
-}) {
+  sidebarOpen,
+  onSidebarToggle,
+}: ModelToggleBarProps) {
   return (
-    <div className="flex gap-4 border-b border-white/10 pb-3 mb-6 overflow-x-auto">
-      {MODELS.map((m) => (
-        <div key={m.id} className="flex items-center gap-2 shrink-0">
-          <span className="text-sm text-white/80">{m.label}</span>
+    <div className="h-14 shrink-0 flex items-center justify-between bg-surface border-b border-border px-[var(--space-5)] select-none">
+      {/* Left side: Sidebar Toggle & Model Chips */}
+      <div className="flex items-center gap-[var(--space-4)] overflow-x-auto scrollbar-none py-1">
+        {!sidebarOpen && (
           <button
-            onClick={() => onToggle(m.id)}
-            className={`w-9 h-5 rounded-full transition-colors relative ${
-              enabled.includes(m.id) ? "bg-emerald-500" : "bg-white/15"
-            }`}
+            onClick={onSidebarToggle}
+            className="flex items-center justify-center w-8 h-8 rounded-[var(--radius-input)] border border-border text-text-muted hover:text-text-primary hover:bg-surface-hover cursor-pointer transition-colors focus-ring"
+            title="Expand sidebar"
           >
-            <span
-              className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
-                enabled.includes(m.id) ? "translate-x-4" : "translate-x-0.5"
-              }`}
-            />
+            <PanelLeft size={16} />
           </button>
+        )}
+
+        <div className="flex items-center gap-[var(--space-2)]">
+          {MODELS.map((m) => {
+            const isActive = enabled.includes(m.id);
+            return (
+              <button
+                key={m.id}
+                onClick={() => onToggle(m.id)}
+                style={{
+                  color: isActive ? m.colorVar : "var(--text-muted)",
+                  backgroundColor: isActive ? m.bgVar : "transparent",
+                  border: isActive ? `1px solid ${m.colorVar}33` : "1px solid var(--border)",
+                }}
+                className="h-[34px] px-[var(--space-3)] rounded-full font-mono text-[12px] font-medium tracking-[0.02em] uppercase transition-colors hover:border-border-hover cursor-pointer focus-ring"
+              >
+                {m.label}
+              </button>
+            );
+          })}
         </div>
-      ))}
+      </div>
+
+      {/* Right side: Auth controls */}
+      <div className="flex items-center gap-[var(--space-3)] shrink-0">
+        <Show when="signed-out">
+          <SignInButton mode="modal">
+            <button className="h-[34px] px-[var(--space-3)] rounded-full text-[13px] font-medium tracking-[0.01em] text-text-muted hover:text-text-primary hover:bg-surface-hover border border-border cursor-pointer transition-colors focus-ring">
+              Sign In
+            </button>
+          </SignInButton>
+        </Show>
+        <Show when="signed-in">
+          <UserButton
+            appearance={{
+              elements: {
+                userButtonAvatarBox: "w-8 h-8",
+                userButtonTrigger: "focus-ring rounded-full",
+              },
+            }}
+          />
+        </Show>
+      </div>
     </div>
   );
 }

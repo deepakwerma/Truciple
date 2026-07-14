@@ -1,4 +1,5 @@
 "use client";
+import { MarkdownRenderer } from "./MarkdownRenderer";
 
 type Props = {
   provider: string;
@@ -7,52 +8,75 @@ type Props = {
   latencyMs?: number;
 };
 
-const META: Record<string, { label: string; color: string; dot: string }> = {
-  gemini: { label: "Gemini", color: "#4285F4", dot: "bg-[#4285F4]" },
-  groq: { label: "Llama", color: "#F5A623", dot: "bg-[#F5A623]" },
-  openai: { label: "GPT-OSS", color: "#10B981", dot: "bg-[#10B981]" },
-  deepseek: { label: "DeepSeek", color: "#8B5CF6", dot: "bg-[#8B5CF6]" },
+const META: Record<string, { label: string; color: string }> = {
+  gemini: { label: "Gemini", color: "var(--gemini)" },
+  groq: { label: "Llama", color: "var(--llama)" },
+  openai: { label: "GPT-OSS", color: "var(--gpt-oss)" },
+  deepseek: { label: "DeepSeek", color: "var(--deepseek)" },
 };
 
 export function ModelCard({ provider, status, text, latencyMs }: Props) {
-  const meta = META[provider] ?? { label: provider, color: "#8B8D98", dot: "bg-white/30" };
+  const meta = META[provider] ?? { label: provider, color: "var(--text-faint)" };
 
   return (
-    <div className="flex flex-col rounded-2xl border border-white/8 bg-[#13151C] overflow-hidden min-h-80">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/6">
+    <div
+      style={{
+        borderColor: status === "failed" ? "rgba(193, 97, 92, 0.4)" : "var(--border)",
+      }}
+      className="flex flex-col rounded-[var(--radius-card)] border bg-surface min-h-[360px] p-[var(--space-5)] transition-colors duration-150 overflow-hidden"
+    >
+      {/* Header Row (no divider line, label + latency badge) */}
+      <div className="flex items-center justify-between mb-[var(--space-4)] select-none">
         <div className="flex items-center gap-2">
-          <span className={`w-1.5 h-1.5 rounded-full ${meta.dot}`} />
-          <span className="font-mono text-[13px] font-medium tracking-tight" style={{ color: meta.color }}>
+          {/* Status Dot */}
+          <span
+            className="w-1.5 h-1.5 rounded-full"
+            style={{ backgroundColor: meta.color }}
+          />
+          {/* Label Text */}
+          <span
+            className="font-mono text-[12px] font-medium tracking-[0.02em] uppercase"
+            style={{ color: meta.color }}
+          >
             {meta.label}
           </span>
         </div>
         {status === "success" && latencyMs !== undefined && (
-          <span className="font-mono text-[11px] text-white/30 tabular-nums">{latencyMs}ms</span>
+          <span className="font-mono text-[11px] font-normal text-text-faint tabular-nums">
+            {latencyMs}ms
+          </span>
         )}
       </div>
 
-      <div className="flex-1 px-4 py-4">
+      {/* Content Section (renders response text under header, no internal scrolling) */}
+      <div className="flex-1 flex flex-col justify-start">
         {status === "loading" && (
-          <div className="h-full flex flex-col justify-center gap-2">
-            <div className="h-2.5 w-4/5 rounded bg-white/6 animate-pulse" />
-            <div className="h-2.5 w-full rounded bg-white/6 animate-pulse" />
-            <div className="h-2.5 w-3/5 rounded bg-white/6 animate-pulse" />
+          <div className="h-full flex flex-col justify-center gap-[var(--space-2)] py-[var(--space-4)] animate-skeleton">
+            <div className="h-2.5 w-[85%] rounded-full bg-border" />
+            <div className="h-2.5 w-full rounded-full bg-border" />
+            <div className="h-2.5 w-[65%] rounded-full bg-border" />
           </div>
         )}
 
         {status === "success" && (
-          <p className="text-[14px] leading-relaxed text-white/90 whitespace-pre-wrap">{text}</p>
+          <div className="font-sans text-[14px] leading-[1.6] text-text-primary">
+            <MarkdownRenderer content={text ?? ""} />
+          </div>
         )}
 
         {status === "failed" && (
-          <div className="h-full flex items-center justify-center text-center">
-            <p className="text-[13px] text-rose-400/70">Something went wrong. Try again.</p>
+          <div className="flex-1 flex items-center justify-center text-center">
+            <p className="font-sans text-[13px] font-medium text-text-muted">
+              Failed to respond
+            </p>
           </div>
         )}
 
         {status === "unavailable" && (
-          <div className="h-full flex items-center justify-center text-center">
-            <p className="text-[13px] text-white/30">Not available today — try tomorrow.</p>
+          <div className="flex-1 flex items-center justify-center text-center">
+            <p className="font-sans text-[13px] font-medium text-text-faint">
+              Not selected for this run
+            </p>
           </div>
         )}
       </div>
