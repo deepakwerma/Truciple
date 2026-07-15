@@ -111,20 +111,16 @@ export default function Home() {
 
   return (
     <div className="h-dvh w-screen overflow-hidden flex bg-bg">
-      <AnimatePresence initial={false}>
-        {sidebarOpen && (
-          <Sidebar
-            onSettingsClick={() => {
-              setAuthReason("settings");
-              setAuthOpen(true);
-            }}
-            onNewChat={handleNewChat}
-            isOpen={sidebarOpen}
-            onToggle={() => setSidebarOpen(!sidebarOpen)}
-            onSelectConversation={handleSelectConversation}
-          />
-        )}
-      </AnimatePresence>
+      <Sidebar
+        onSettingsClick={() => {
+          setAuthReason("settings");
+          setAuthOpen(true);
+        }}
+        onNewChat={handleNewChat}
+        isOpen={sidebarOpen}
+        onToggle={() => setSidebarOpen(!sidebarOpen)}
+        onSelectConversation={handleSelectConversation}
+      />
 
       <main className="flex-1 h-full flex flex-col overflow-hidden relative">
         <ModelToggleBar
