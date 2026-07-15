@@ -110,7 +110,7 @@ export default function Home() {
     ).length >= 2;
 
   return (
-    <div className="h-screen w-screen overflow-hidden flex bg-bg">
+    <div className="h-dvh w-screen overflow-hidden flex bg-bg">
       <AnimatePresence initial={false}>
         {sidebarOpen && (
           <Sidebar
