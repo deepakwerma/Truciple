@@ -22,7 +22,7 @@ export default function Home() {
   const [authReason, setAuthReason] = useState<"settings" | "limit">(
     "settings",
   );
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [currentPrompt, setCurrentPrompt] = useState<string | null>(null);
 
   function toggleModel(id: string) {

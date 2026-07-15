@@ -23,15 +23,6 @@ export function Sidebar({
 }: SidebarProps) {
   const { isSignedIn } = useUser();
   const [history, setHistory] = useState<Conversation[]>([]);
-  const [isDesktop, setIsDesktop] = useState(true);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 768px)");
-    setIsDesktop(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
 
   useEffect(() => {
     if (!isSignedIn) {
@@ -111,21 +102,9 @@ export function Sidebar({
     </div>
   );
 
-  if (isDesktop) {
-    return (
-      <motion.div
-        animate={{ width: isOpen ? 256 : 0 }}
-        transition={{ duration: 0.2, ease: "easeInOut" }}
-        className="h-full overflow-hidden bg-bg border-r border-border shrink-0"
-        style={{ borderRightWidth: isOpen ? 1 : 0 }}
-      >
-        {sidebarContent}
-      </motion.div>
-    );
-  }
-
   return (
     <>
+      {/* Mobile backdrop — sirf md se neeche render/paint hota hai */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -134,15 +113,27 @@ export function Sidebar({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onToggle}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+            className="md:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
           />
         )}
       </AnimatePresence>
 
+      {/* Desktop: default OPEN, koi initial-close nahi */}
+      <motion.div
+        animate={{ width: isOpen ? 256 : 0 }}
+        transition={{ duration: 0.2, ease: "easeInOut" }}
+        className="hidden md:block h-full overflow-hidden bg-bg border-r border-border shrink-0"
+        style={{ borderRightWidth: isOpen ? 1 : 0 }}
+      >
+        {sidebarContent}
+      </motion.div>
+
+      {/* Mobile: default CLOSED (initial={{x:-256}}), user ke toggle se hi khulta hai */}
       <motion.aside
+        initial={{ x: -256 }}
         animate={{ x: isOpen ? 0 : -256 }}
         transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
-        className="fixed top-0 left-0 h-full bg-bg border-r border-border z-50"
+        className="md:hidden fixed top-0 left-0 h-full bg-bg border-r border-border z-50"
       >
         {sidebarContent}
       </motion.aside>
