@@ -23,6 +23,8 @@ export function AuthModal({
   const { isSignedIn, user, isLoaded } = useUser();
   const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-up");
 
+  // Auto-close the modal the moment Clerk confirms the session is signed in.
+  // This fixes the "sign in twice" issue — no more waiting for a manual retap.
   useEffect(() => {
     if (open && isLoaded && isSignedIn) {
       onClose();
@@ -109,13 +111,13 @@ export function AuthModal({
                   >
                     {mode === "sign-in" ? (
                       <SignIn
-                        routing="hash"
+                        routing={"virtual" as any}
                         appearance={clerkAppearance}
                         fallbackRedirectUrl="/"
                       />
                     ) : (
                       <SignUp
-                        routing="hash"
+                        routing={"virtual" as any}
                         appearance={clerkAppearance}
                         fallbackRedirectUrl="/"
                       />
